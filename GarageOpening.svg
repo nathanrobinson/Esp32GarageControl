@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   version="1.1"
+   width="700"
+   height="700"
+   viewBox="470,830,700,700"
+   id="svg1"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <g
+     id="document"
+     fill-opacity="0"
+     fill="#ffffff"
+     fill-rule="nonzero"
+     stroke="#000000"
+     stroke-width="0"
+     stroke-linecap="butt"
+     stroke-linejoin="miter"
+     stroke-miterlimit="10"
+     stroke-dasharray=""
+     stroke-dashoffset="0"
+     font-family="none"
+     font-weight="none"
+     font-size="none"
+     text-anchor="none">
+    <rect
+       x="470"
+       y="592.85712"
+       transform="scale(1,1.4)"
+       width="700"
+       height="500"
+       id="Shape 1 1"
+       vector-effect="non-scaling-stroke"
+       style="display:inline;fill:#000000;fill-opacity:0.711462" />
+    <rect
+       style="fill:#b3b3b3;stroke:#ffffff;stroke-opacity:1;stroke-width:10;stroke-linecap:round;stroke-linejoin:round;fill-opacity:1"
+       id="rect1"
+       width="614.33478"
+       height="627.22296"
+       x="515.10852"
+       y="894.44073"
+       rx="25"
+       ry="25" />
+    <g
+       id="Group 1"
+       style="display:inline;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:5;stroke-dasharray:none;stroke-opacity:1"
+       transform="translate(0,-111.78707)">
+      <path
+         d="m 643.04383,1355.4687 v -69.4 h 359.99997 v 69.4 z"
+         id="element-72"
+         style="fill-opacity:1;stroke-width:5;stroke-dasharray:none" />
+      <path
+         d="m 643.04383,1424.8687 v -69.4 h 359.99997 v 69.4 z"
+         id="element-73"
+         style="fill-opacity:1;stroke-width:5;stroke-dasharray:none" />
+      <path
+         d="m 643.04383,1494.2687 v -69.4 h 359.99997 v 69.4 z"
+         id="element-74"
+         style="fill-opacity:1;stroke-width:5;stroke-dasharray:none" />
+      <path
+         d="m 928.04384,1286.186 v -69.4 h 74.99996 v 69.4 z"
+         id="element-75"
+         style="fill-opacity:1;stroke-width:5;stroke-dasharray:none" />
+      <path
+         d="m 788.04384,1286.0687 v -69.4 h 70 v 69.4 z"
+         id="element-76"
+         style="fill-opacity:1;stroke-width:5;stroke-dasharray:none" />
+      <path
+         d="m 643.04383,1286.186 v -69.4 h 75 v 69.4 z"
+         id="element-71"
+         style="fill-opacity:1;stroke-width:5;stroke-dasharray:none" />
+      <path
+         d="m 643.04383,1216.786 v -69.4 h 359.99997 v 69.4 z"
+         id="Path 1"
+         style="fill-opacity:1;stroke-width:5;stroke-dasharray:none" />
+    </g>
+    <g
+       id="layer1 1"
+       stroke="#000000"
+       style="fill:#7fc9ff;fill-opacity:1;stroke-width:10;stroke-dasharray:none">
+      <path
+         d="M583.78557,1494.31882c-5.81915,0 -10.5365,-4.71735 -10.5365,-10.5365v-395.42723c0,-5.81915 4.71735,-10.5365 10.5365,-10.5365h478.51653c5.81915,0 10.5365,4.71735 10.5365,10.5365v395.42723c0,5.81915 -4.71735,10.5365 -10.5365,10.5365h-59.40052v-114.47568c0.18594,-0.75358 0.28451,-1.54098 0.28451,-2.35111v-220.21211c0,-5.46427 -4.48424,-9.89394 -10.01583,-9.89394h-339.96834c-5.53159,0 -10.01583,4.42967 -10.01583,9.89394v177.0389h-0.28451v160z"
+         id="element-81"
+         stroke-width="10"
+         stroke-linecap="round"
+         stroke-linejoin="round"
+         style="fill-opacity:1;stroke-width:10;stroke-dasharray:none" />
+      <path
+         d="M554.35247,1058.39616l268.2302,-138.05276l269.15252,138.05276"
+         id="element-77"
+         stroke-width="10"
+         stroke-linecap="round"
+         stroke-linejoin="round"
+         style="fill-opacity:1;stroke-width:10;stroke-dasharray:none" />
+      <path
+         d="M1077.18079,1052.13122c3.00532,1.7248 5.02959,4.96561 5.02959,8.67923v7.00814c0,5.52285 -4.47715,10 -10,10h-497.41077c-5.52285,0 -10,-4.47715 -10,-10v-7.00814c0,-4.20115 2.83208,-7.19865 6.50301,-8.67923h253.12472z"
+         id="element-78"
+         stroke-width="10"
+         stroke-linecap="none"
+         stroke-linejoin="none"
+         style="fill-opacity:1;stroke-width:10;stroke-dasharray:none" />
+    </g>
+  </g>
+</svg>
