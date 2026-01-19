@@ -50,6 +50,7 @@ WifiManager::WifiManager()
     wifiChannel = 0;
     lastWifiAttemptMs = 0;
     s_instance = this;
+    lastWifiUpdate = 0;
 }
 
 WifiManager::~WifiManager()
@@ -208,6 +209,15 @@ void WifiManager::loop()
                 lastWifiAttemptMs = now;
             }
         }
+    }
+
+    unsigned long now = millis() / 1000;
+    if ((now - lastWifiUpdate) > WIFI_UPDATE_INTERVAL_SECONDS)
+    {
+        mqttManager.publishWifiSsid(PUBLISHER, nowConnected ? settings.SSID() : "");
+        mqttManager.publishWifiChannel(PUBLISHER, nowChannel);
+        mqttManager.publishWifiRssi(PUBLISHER, nowConnected ? WiFi.RSSI() : -666);
+        lastWifiUpdate = now;
     }
 }
 

@@ -138,6 +138,8 @@ Display::~Display()
 
 void Display::init()
 {
+    delay(120); // Give the LCD controller time to wake up
+
     initializeLcdPins();
 
     delay(120); // Give the LCD controller time to wake up

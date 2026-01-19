@@ -7,6 +7,8 @@
 #include "garage.h"
 #include "TaskLoop.h"
 
+#define WIFI_UPDATE_INTERVAL_SECONDS 90
+
 class WifiManager
 {
 public:
@@ -64,6 +66,7 @@ private:
     bool wifiConnected;
     uint8_t wifiChannel;
     String espNowPassword;
+    unsigned long lastWifiUpdate;
 };
 
 extern WifiManager wifiManager;
