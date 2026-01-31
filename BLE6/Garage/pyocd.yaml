@@ -1,0 +1,4 @@
+probes:
+  "CFA4B7EB": # Unique ID substring
+    target_override: nrf54l
+    frequency: 8000000

@@ -1,0 +1,8 @@
+{
+    "nrf-connect.applications": [
+        "${workspaceFolder}/Garage"
+    ],
+    "cSpell.words": [
+        "printk"
+    ]
+}
