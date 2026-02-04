@@ -524,6 +524,7 @@ static void disconnected_cb(struct bt_conn *conn, uint8_t reason)
     connection = NULL;
     connected_name[0] = 0;
 
+    k_sleep(K_MSEC(500));
     sys_reboot(SYS_REBOOT_COLD);
 }
 
@@ -868,6 +869,14 @@ bool BleInitiator::init()
     if (err)
     {
         LOG_ERR("Failed to encrypt connection (err %d)", err);
+        /* Short delay to allow logs/events to flush before disconnecting */
+        k_sleep(K_MSEC(100));
+
+        /* Disconnect from the remote if encryption failed */
+        if (connection)
+        {
+            bt_conn_disconnect(connection, BT_HCI_ERR_REMOTE_USER_TERM_CONN);
+        }
         return 0;
     }
 
