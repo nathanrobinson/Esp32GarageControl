@@ -33,6 +33,8 @@ public:
         CAR2 = 2
     };
     void publishCarRssi(Area area, CarIndex carIndex, int rssi);
+    // Publish a distance value (meters) to /{area}/car/{index}/distance
+    void publishCarDistance(Area area, CarIndex carIndex, float distance);
     void publishWifiSsid(Area area, String ssid);
     void publishWifiChannel(Area area, int channel);
     void publishWifiRssi(Area area, int rssi);

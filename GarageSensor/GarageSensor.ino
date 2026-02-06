@@ -7,8 +7,12 @@
 #include "mqtt_manager.h"
 #include "touch.h"
 #include "pin_config.h"
+#include "ble_manager.h"
 
 #define TOUCH_COOLDOWN_TIME_MS 750
+#define REBOOT_TIME (60 * 60 * 24) // Once a day
+
+static long loops = 0;
 
 void setup()
 {
@@ -46,10 +50,19 @@ void setup()
 
     mqttManager.init();
     Serial.println("MQTT ready...");
+
+    bleManager.init();
+    Serial.println("BLE ready...");
 }
 
 void loop()
 {
     wifiManager.loop();
+    if (loops++ > REBOOT_TIME)
+    {
+        // reboot to clear out and reset everything
+        Serial.println("Rebooting...");
+        ESP.restart();
+    }
     delay(1000);
 }

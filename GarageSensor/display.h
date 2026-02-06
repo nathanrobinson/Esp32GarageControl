@@ -24,6 +24,7 @@ public:
         WIFI = 0,
         CAR1 = 1,
         CAR2 = 2,
+        BLE = 3
     };
     enum SIGNAL_STRENGTH
     {
@@ -38,6 +39,7 @@ public:
     void updateWifi(String wifi);
     void showImage(uint8_t index); // show specific image index
     void updateConnection(SCAN_LOCATION location, SIGNAL_STRENGTH strength);
+    void updateDistance(SCAN_LOCATION location, float meters);
 
 private:
 #ifdef ENABLE_DISPLAY
@@ -60,7 +62,7 @@ private:
     uint16_t startX;
     uint16_t startY;
     uint16_t wifiWidth;
-    SIGNAL_STRENGTH lastStrength[3];
+    SIGNAL_STRENGTH lastStrength[4];
 #endif
 };
 

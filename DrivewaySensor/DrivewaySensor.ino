@@ -7,6 +7,10 @@
 #include "mqtt_manager.h"
 #include "pin_config.h"
 
+#define REBOOT_TIME (60 * 60 * 24) // every hour
+
+static long loops = 0;
+
 void setup()
 {
   Serial.begin(115200);
@@ -19,18 +23,24 @@ void setup()
   settings.init();
   Serial.println("Settings ready...");
 
-  mqttManager.init();
-  Serial.println("MQTT ready...");
+  display.init();
+  Serial.println("Display ready...");
 
   wifiManager.init();
   Serial.println("WiFi ready...");
 
-  display.init();
-  Serial.println("Display ready...");
+  mqttManager.init();
+  Serial.println("MQTT ready...");
 }
 
 void loop()
 {
   wifiManager.loop();
+  if (loops++ > REBOOT_TIME)
+  {
+    // reboot to clear out and reset everything
+    Serial.println("Rebooting...");
+    ESP.restart();
+  }
   delay(1000);
 }

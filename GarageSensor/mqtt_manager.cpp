@@ -156,6 +156,30 @@ void MqttManager::publishCarRssi(Area area, CarIndex carIndex, int rssi)
     xQueueSend(outLoop.queue(), &m, 0);
 }
 
+void MqttManager::publishCarDistance(Area area, CarIndex carIndex, float distance)
+{
+    // validate enums
+    if (!(area == GARAGE || area == DRIVEWAY))
+        return;
+    if (!(carIndex == CAR1 || carIndex == CAR2))
+        return;
+
+    TopicMessage m;
+    memset(&m, 0, sizeof(m));
+    const char *areaStr = (area == GARAGE) ? "garage" : "driveway";
+    snprintf(m.topic, sizeof(m.topic), "home/%s/car/%d/distance", areaStr, static_cast<int>(carIndex));
+    int n = snprintf(m.payload, sizeof(m.payload), "%.2f", distance);
+    m.len = (uint16_t)max(0, n);
+
+    if (!outLoop.queue())
+    {
+        if (!enqueueEarly(m))
+            Serial.println("MQTT early buffer full, dropping publish.");
+        return;
+    }
+    xQueueSend(outLoop.queue(), &m, 0);
+}
+
 void MqttManager::publishWifiSsid(Area area, String ssid)
 {
     // validate enums

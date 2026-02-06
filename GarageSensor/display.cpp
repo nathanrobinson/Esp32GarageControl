@@ -116,7 +116,7 @@ Display::Display()
     image_paths[3] = "/GarageClosing.raw";
     for (int i = 0; i < kImageCount; ++i)
         bitmaps[i] = nullptr;
-    for (int i = 0; i < 4; ++i)
+    for (int i = 0; i <= 4; ++i)
         lastStrength[i] = OFF;
 #endif
 }
@@ -183,6 +183,8 @@ void Display::init()
     updateConnection(CAR1, OFF);
     textAt(40, 190, "Car 2:");
     updateConnection(CAR2, OFF);
+    textAt(40, 260, "BLE:");
+    updateConnection(BLE, OFF);
 #endif
 }
 
@@ -254,6 +256,42 @@ void Display::updateConnection(SCAN_LOCATION location, SIGNAL_STRENGTH strength)
     {
         drawSignalIndicator(strength, bw, bh, canvas);
     }
+
+    // Push the composed canvas to the display in one bitmap call
+    gfx->draw16bitRGBBitmap(bx, y, canvas.getFramebuffer(), bw, bh);
+#endif
+}
+
+void Display::updateDistance(SCAN_LOCATION location, float meters)
+{
+#ifdef ENABLE_DISPLAY
+    int16_t y = 50 + (location * 70);
+    // clear indicator area
+    const int bx = 200;
+    const int bw = 75;
+    const int bh = 40;
+
+    uint16_t color;
+    if (meters >= 5)
+        color = RGB565_SPRINGGREEN;
+    else if (meters >= 10)
+        color = RGB565_YELLOWGREEN;
+    else if (meters >= 15)
+        color = RGB565_ORANGE;
+    else if (meters >= 20)
+        color = RGB565_RED;
+
+    // Render the indicator into an offscreen 16-bit canvas, then push it as a single bitmap
+    Arduino_Canvas canvas(bw, bh, gfx);
+
+    // ensure canvas framebuffer allocated
+    canvas.begin(GFX_SKIP_OUTPUT_BEGIN);
+    // clear canvas
+    canvas.fillRect(0, 0, bw, bh, RGB565_BLACK);
+    canvas.setTextColor(color);
+    canvas.setTextSize(3);
+    canvas.setCursor(0, 0);
+    canvas.printf("%.1fm", meters);
 
     // Push the composed canvas to the display in one bitmap call
     gfx->draw16bitRGBBitmap(bx, y, canvas.getFramebuffer(), bw, bh);

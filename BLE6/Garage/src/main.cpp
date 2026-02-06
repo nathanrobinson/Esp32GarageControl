@@ -5,26 +5,32 @@
 #include "../../src/blinker.h"
 #include "ble_initiator.h"
 
+#include <zephyr/logging/log.h>
+LOG_MODULE_REGISTER(app_main, LOG_LEVEL_INF);
+
 /* 1000 msec = 1 sec */
 #define SLEEP_TIME_MS 2000
 #define ON_TIME_MS 150
 #define OFF_TIME_MS 100
+#define HEATBEAT_TIME 60
+
+static uint8_t loopCount = 0;
 
 int main(void)
 {
-    printk("[main] Starting application\n");
+    LOG_INF("[main] Starting application\n");
 
-    printk("[main] Initializing Blinker...\n");
+    LOG_INF("[main] Initializing Blinker...\n");
     Blinker bl;
     bl.blink(2, ON_TIME_MS, OFF_TIME_MS);
-    printk("[main] Blinker initialized\n");
+    LOG_INF("[main] Blinker initialized\n");
 
-    printk("[main] Initializing Bluetooth...\n");
+    LOG_INF("[main] Initializing Bluetooth...\n");
     BleInitiator bleInitiator;
     bleInitiator.init();
-    printk("[main] Bluetooth initialized\n");
+    LOG_INF("[main] Bluetooth initialized\n");
 
-    printk("[main] Requesting blink patterns\n");
+    LOG_INF("[main] Requesting blink patterns\n");
     while (1)
     {
         if (bleInitiator.connected())
@@ -34,6 +40,12 @@ int main(void)
         else
         {
             bl.blink(2, ON_TIME_MS, OFF_TIME_MS);
+        }
+
+        if (loopCount++ > HEATBEAT_TIME)
+        {
+            loopCount = 0;
+            printk("[HB]\r");
         }
         k_msleep(SLEEP_TIME_MS);
     }

@@ -29,21 +29,16 @@ extern "C"
 #include <zephyr/bluetooth/bluetooth.h>
 #include <zephyr/settings/settings.h>
 #include <string.h>
+#include <errno.h>
 
 #include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(app_main, LOG_LEVEL_INF);
+LOG_MODULE_REGISTER(ble_initiator, LOG_LEVEL_INF);
 
 #include "ble_initiator.h"
 #include "../../src/PairingConfig.h"
 
 /* GAAT UUIDS
 Garage_Ranger service: 7e949dd6-9969-484f-8b39-070d0fed42e1
-Connected car: 01cb165c-b836-4c6c-91c1-a820d7ac043a
-IFFT: 2151813e-b745-4a24-8812-b856c0d6ea89
-Phase Slope: c9688b0d-19e1-4955-ac67-6747be7c50a5
-RTT: c21672a2-6200-40f2-84a4-e3518a4e1f72
-Best: 1d05d611-1f24-492a-bc7d-d2e8dba3f7eb
-Weighted: d8686a9b-102b-45f4-a6cf-b987a66d4260
 */
 
 /* Calibration factors derived from measurements at 0.5m, 1m, 2m, 3m, and 4m
@@ -791,6 +786,82 @@ static int scan_init(void)
 static struct bt_conn_cb conn_cb;
 
 static struct k_thread cs_thread_data;
+static bool beacon_adv_running = false;
+
+static int try_set_security(struct bt_conn *conn, bt_security_t sec, int retries = 5, int backoff_ms = 150)
+{
+    if (!conn)
+        return -EINVAL;
+
+    bt_security_t cur = bt_conn_get_security(conn);
+    if (cur >= sec)
+        return 0;
+
+    for (int i = 0; i < retries; i++)
+    {
+        int err = bt_conn_set_security(conn, sec);
+        if (err == 0)
+            return 0;
+        if (err == -EBUSY)
+        {
+            /* Another security procedure ongoing, wait and retry */
+            k_msleep(backoff_ms);
+            continue;
+        }
+        return err;
+    }
+    return -EBUSY;
+}
+
+static void advertise_range_beacon(uint8_t car_index, float estimate)
+{
+    /* Service Data (16-bit UUID) AD structure expects: [UUID (2 bytes LE)] [service-data...]
+     * Build ASCII payload in the format "<car_index>:<estimate>m" so the scanner can parse it easily.
+     */
+    char payload_str[32];
+    int plen = snprintf(payload_str, sizeof(payload_str), "%u:%.2fm", car_index, (double)estimate);
+    if (plen < 0) plen = 0;
+    if (plen >= (int)sizeof(payload_str)) plen = sizeof(payload_str) - 1;
+
+    /* Compose svc_data with 2-byte UUID (little-endian) then ASCII payload */
+    const uint16_t svc_uuid = 0xA455; /* same UUID used for scan filter */
+    uint8_t svc_data[2 + 32];
+    svc_data[0] = (uint8_t)(svc_uuid & 0xFF);
+    svc_data[1] = (uint8_t)((svc_uuid >> 8) & 0xFF);
+    memcpy(&svc_data[2], payload_str, plen);
+
+    struct bt_data ad[] = {
+        BT_DATA(BT_DATA_NAME_COMPLETE, "GarageRanger", sizeof("GarageRanger") - 1),
+        BT_DATA(BT_DATA_SVC_DATA16, svc_data, 2 + plen),
+    };
+
+    int err;
+    if (beacon_adv_running)
+    {
+        err = bt_le_adv_update_data(ad, ARRAY_SIZE(ad), NULL, 0);
+        if (err)
+        {
+            LOG_DBG("Updating beacon adv failed (%d), restarting", err);
+            bt_le_adv_stop();
+            beacon_adv_running = false;
+        }
+        else
+        {
+            return;
+        }
+    }
+
+    err = bt_le_adv_start(BT_LE_ADV_NCONN, ad, ARRAY_SIZE(ad), NULL, 0);
+    if (err)
+    {
+        LOG_ERR("Beacon advertising failed to start (err %d)", err);
+    }
+    else
+    {
+        beacon_adv_running = true;
+    }
+}
+
 static void cs_thread(void *p1, void *p2, void *p3)
 {
     while (true)
@@ -838,7 +909,25 @@ static void cs_thread(void *p1, void *p2, void *p3)
                        (double)distance_on_ap.rtt,
                        (double)distance_on_ap.best,
                        (double)best_estimate);
+
+                /* Broadcast beacon with car index and weighted estimate */
+                uint8_t car_index = 0;
+                if (connected_name[0] == 'C' && connected_name[1] == 'a' && connected_name[2] == 'r' && connected_name[3] == '_')
+                {
+                    char c = connected_name[4];
+                    if (c >= '1' && c <= '9')
+                        car_index = (uint8_t)(c - '0');
+                }
+
+                if (car_index != 0)
+                {
+                    advertise_range_beacon(car_index, best_estimate);
+                }
             }
+        }
+        else
+        {
+            advertise_range_beacon(0, 0);
         }
         /* Pause to rate-limit logging */
         k_sleep(K_MSEC(250));
@@ -856,6 +945,8 @@ bool BleInitiator::init()
         return 0;
     }
 
+    advertise_range_beacon(0, 0);
+
     PairingConfig::init(pairing_complete_enable_cs_c);
 
     if (!startScan())
@@ -865,7 +956,7 @@ bool BleInitiator::init()
 
     k_sem_take(&sem_connected, K_FOREVER);
 
-    err = bt_conn_set_security(connection, BT_SECURITY_L2);
+    err = try_set_security(connection, BT_SECURITY_L2);
     if (err)
     {
         LOG_ERR("Failed to encrypt connection (err %d)", err);
@@ -899,7 +990,7 @@ bool BleInitiator::init()
 
     k_sem_take(&sem_discovery_done, K_FOREVER);
 
-    if(!configureRasCs())
+    if (!configureRasCs())
     {
         return 0;
     }
@@ -1133,7 +1224,7 @@ bool BleInitiator::configureChannelSounding()
     bt_le_cs_set_valid_chmap_bits(config_params.channel_map);
 
     int err = bt_le_cs_create_config(connection, &config_params,
-                                 BT_LE_CS_CREATE_CONFIG_CONTEXT_LOCAL_AND_REMOTE);
+                                     BT_LE_CS_CREATE_CONFIG_CONTEXT_LOCAL_AND_REMOTE);
     if (err)
     {
         LOG_ERR("Failed to create CS config (err %d)", err);
@@ -1146,7 +1237,7 @@ bool BleInitiator::configureChannelSounding()
 bool BleInitiator::beginCsProcedure()
 {
     const uint16_t procedure_interval = (uint16_t)((ras_feature_bits & RAS_FEAT_REALTIME_RD) ? 5 : 10);
-    
+
     const struct bt_le_cs_set_procedure_parameters_param procedure_params = {
         .config_id = CS_CONFIG_ID,
         .max_procedure_len = 1000,

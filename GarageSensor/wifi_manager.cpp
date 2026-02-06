@@ -276,19 +276,19 @@ void WifiManager::updateRssi(Display::SCAN_LOCATION peer, int rssi, bool anonymo
     }
     Display::SIGNAL_STRENGTH strength = Display::OFF;
 
-    if (rssi > -30)
+    if (rssi >= -50)
     {
         strength = Display::GOOD;
     }
-    else if (rssi > -55)
+    else if (rssi >= -65)
     {
         strength = Display::OK;
     }
-    else if (rssi > -80)
+    else if (rssi >= -85)
     {
         strength = Display::WEAK;
     }
-    else if (rssi > -100)
+    else if (rssi >= -100)
     {
         strength = Display::POOR;
     }
