@@ -267,8 +267,8 @@ void Display::updateDistance(SCAN_LOCATION location, float meters)
 #ifdef ENABLE_DISPLAY
     int16_t y = 50 + (location * 70);
     // clear indicator area
-    const int bx = 200;
-    const int bw = 75;
+    const int bx = 187;
+    const int bw = 90;
     const int bh = 40;
 
     uint16_t color;
