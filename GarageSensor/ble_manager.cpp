@@ -13,6 +13,9 @@ static const long BLE_TIMEOUT_MS = 50000;      // show off after 50s
 
 class AdvertisedCallbacks : public NimBLEScanCallbacks
 {
+private:
+    bool resetDistance = false;
+
 public:
     AdvertisedCallbacks() {}
     void onResult(const NimBLEAdvertisedDevice *adv) override
@@ -36,8 +39,17 @@ public:
 
         uint8_t carIdx = svc[0] == '1' ? 1 : svc[0] == '2' ? 2
                                                            : 0;
-        if (carIdx == 0)
+
+        if (carIdx == 0 && !resetDistance)
+        {
+            mqttManager.publishCarDistance(MqttManager::GARAGE, MqttManager::CAR1, 666);
+            mqttManager.publishCarDistance(MqttManager::GARAGE, MqttManager::CAR2, 666);
+            display.updateDistance(Display::CAR1, 666);
+            display.updateDistance(Display::CAR2, 666);
+            resetDistance = true;
             return;
+        }
+        resetDistance = false;
 
         size_t colon = svc.find(':');
         if (colon == std::string::npos)
@@ -117,12 +129,13 @@ void BleManager::init()
     _running = true;
 }
 
+static uint8_t scanLoopCount = 0;
 void BleManager::taskLoop()
 {
     NimBLEScan *pScan = NimBLEDevice::getScan();
     // Use passive scans and short bursts so WiFi/ESP-NOW can share the radio.
     pScan->setScanCallbacks(new AdvertisedCallbacks(), false);
-    pScan->setActiveScan(false); // passive: do not send scan requests
+    pScan->setActiveScan(true); // passive: do not send scan requests
     // Keep scanning interval/window small to reduce BLE radio duty cycle
     pScan->setInterval(160);
     pScan->setWindow(48);
@@ -149,8 +162,16 @@ void BleManager::taskLoop()
         }
         // Run a short passive scan burst (100ms), then yield the radio to WiFi/ESP-NOW.
         // The duration parameter is in ms not s.
-        pScan->start(100, false, false);
-        pScan->clearResults();
+        if (scanLoopCount++ > SCAN_LOOPS)
+        {
+            scanLoopCount = 0;
+            pScan->clearResults();
+            pScan->start(100, false, true);
+        }
+        else
+        {
+            pScan->start(100, true, false);
+        }
         // Allow at least ~.25s of free time for WiFi/ESP-NOW activity
         vTaskDelay(pdMS_TO_TICKS(250));
     }

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <zephyr/kernel.h>
 #include <zephyr/sys/printk.h>
+#include <zephyr/sys/reboot.h>
 
 #include "../../src/blinker.h"
 #include "ble_reflector.h"
@@ -9,6 +10,9 @@
 #define SLEEP_TIME_MS 2000
 #define ON_TIME_MS 150
 #define OFF_TIME_MS 100
+#define REBOOT_TIME (60 * 30) // * SLEEP_TIME_MS = 1 hour
+
+static uint8_t loopCount = 0;
 
 int main(void)
 {
@@ -41,6 +45,12 @@ int main(void)
         else
         {
             bl.blink(2, ON_TIME_MS, OFF_TIME_MS);
+        }
+
+        if (loopCount++ > REBOOT_TIME)
+        {
+            printk("[main] Rebooting (cold) after %d loops\n", loopCount);
+            sys_reboot(SYS_REBOOT_COLD);
         }
         k_msleep(SLEEP_TIME_MS);
     }

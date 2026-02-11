@@ -133,11 +133,8 @@ void MqttManager::publishCarRssi(Area area, CarIndex carIndex, int rssi)
     if (!(carIndex == CAR1 || carIndex == CAR2))
         return;
     // validate rssi in expected range: 0 down to -666 (inclusive)
-    if (rssi > 0)
-        rssi = 0;
-
-    if (rssi < -666)
-        rssi = -666;
+    if (rssi > 0 || rssi < -100)
+        return;
 
     TopicMessage m;
     memset(&m, 0, sizeof(m));
@@ -162,6 +159,8 @@ void MqttManager::publishCarDistance(Area area, CarIndex carIndex, float distanc
     if (!(area == GARAGE || area == DRIVEWAY))
         return;
     if (!(carIndex == CAR1 || carIndex == CAR2))
+        return;
+    if (distance < 0 || distance > 100)
         return;
 
     TopicMessage m;
@@ -236,11 +235,8 @@ void MqttManager::publishWifiRssi(Area area, int rssi)
     if (!(area == GARAGE || area == DRIVEWAY))
         return;
     // validate rssi in expected range: 0 down to -666 (inclusive)
-    if (rssi > 0)
-        rssi = 0;
-
-    if (rssi < -666)
-        rssi = -666;
+    if (rssi > 0 || rssi < -100)
+        return;
 
     TopicMessage m;
     memset(&m, 0, sizeof(m));

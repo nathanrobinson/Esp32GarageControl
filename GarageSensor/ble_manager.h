@@ -4,6 +4,8 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+#define SCAN_LOOPS 10
+
 class BleManager
 {
 public:

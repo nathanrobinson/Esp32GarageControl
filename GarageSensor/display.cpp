@@ -288,10 +288,13 @@ void Display::updateDistance(SCAN_LOCATION location, float meters)
     canvas.begin(GFX_SKIP_OUTPUT_BEGIN);
     // clear canvas
     canvas.fillRect(0, 0, bw, bh, RGB565_BLACK);
-    canvas.setTextColor(color);
-    canvas.setTextSize(3);
-    canvas.setCursor(0, 0);
-    canvas.printf("%.1fm", meters);
+    if (meters < 666)
+    {
+        canvas.setTextColor(color);
+        canvas.setTextSize(3);
+        canvas.setCursor(0, 0);
+        canvas.printf("%.1fm", meters);
+    }
 
     // Push the composed canvas to the display in one bitmap call
     gfx->draw16bitRGBBitmap(bx, y, canvas.getFramebuffer(), bw, bh);
