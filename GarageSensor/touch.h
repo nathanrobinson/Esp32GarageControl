@@ -21,18 +21,18 @@ public:
     Touch();
     void init(TouchCallback cb);
 
+    void loop();
+
 private:
     static Touch *instance;
-    static void IIC_Touch_Interrupt(void);
-    static void touchTaskStatic(void *pv);
+    // static void IIC_Touch_Interrupt(void);
+    // static void touchTaskStatic(void *pv);
 
-    void touchTask();
-
-    std::unique_ptr<TAMC_GT911> touch;
+    std::unique_ptr<TAMC_GT911> touch911;
 
     // synchronization and callback
-    void *touchSem = nullptr;        // SemaphoreHandle_t (opaque here)
-    void *touchTaskHandle = nullptr; // TaskHandle_t (opaque here)
+    // void *touchSem = nullptr;        // SemaphoreHandle_t (opaque here)
+    // void *touchTaskHandle = nullptr; // TaskHandle_t (opaque here)
     TouchCallback callback;
 };
 

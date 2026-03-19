@@ -17,6 +17,7 @@ public:
     Garage();
     State getState() const;
     void setState(State s);
+    void publishState(State s);
     void buttonPressed();
     void control(State targetState);
 

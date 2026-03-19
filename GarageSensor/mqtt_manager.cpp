@@ -119,7 +119,32 @@ void MqttManager::publishGarageControl(TargetState state)
             Serial.println("MQTT client not connected.");
             return;
         }
-        client.publish(m.topic, m.payload, m.len);
+        client.publish(m.topic, m.payload);
+        return;
+    }
+    xQueueSend(outLoop.queue(), &m, 0);
+}
+
+void MqttManager::publishGarageState(TargetState state)
+{
+    TopicMessage m;
+    m.retained = true;
+    memset(&m, 0, sizeof(m));
+    strncpy(m.topic, "home/garage/state", sizeof(m.topic) - 1);
+    int n = snprintf(m.payload, sizeof(m.payload), "%d", static_cast<int>(state));
+    m.len = (uint16_t)max(0, n);
+
+    // enqueue outgoing publish; mqtt task will send
+    if (!outLoop.queue())
+    {
+        // fallback: direct publish
+        connectIfNeeded();
+        if (!client.connected())
+        {
+            Serial.println("MQTT client not connected.");
+            return;
+        }
+        client.publish(m.topic, m.payload, true);
         return;
     }
     xQueueSend(outLoop.queue(), &m, 0);
@@ -376,7 +401,7 @@ void MqttManager::taskLoop()
             // drain outgoing queue (non-blocking)
             while (outLoop.queue() && xQueueReceive(outLoop.queue(), &message, 0) == pdTRUE)
             {
-                client.publish(message.topic, (const uint8_t *)message.payload, message.len);
+                client.publish(message.topic, message.payload, message.retained);
             }
 
             // process at most one incoming message per loop to avoid locking

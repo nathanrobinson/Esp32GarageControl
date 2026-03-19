@@ -23,9 +23,20 @@ void Garage::setState(State s)
     if (s == state)
         return;
     state = s;
+
     Serial.printf("Garage state changed to %d\n", (int)state);
     updateDisplay();
-    wifiManager.sendGarageState(s);
+    wifiManager.sendGarageState(state);
+}
+
+void Garage::publishState(State s)
+{
+    if (s == state)
+        return;
+
+    mqttManager.publishGarageState(static_cast<MqttManager::TargetState>(s));
+
+    setState(s);
 }
 
 void Garage::control(State targetState)

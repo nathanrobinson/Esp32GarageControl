@@ -14,7 +14,8 @@ Touch *Touch::instance = nullptr;
 Touch touch; // global instance
 
 Touch::Touch()
-    : touchSem(nullptr), touchTaskHandle(nullptr), callback(nullptr)
+    : // touchSem(nullptr), touchTaskHandle(nullptr),
+      callback(nullptr)
 {
     instance = this;
 }
@@ -34,72 +35,72 @@ void Touch::init(TouchCallback cb)
     Wire.endTransmission();
     delay(100);
 
-    touch = std::make_unique<TAMC_GT911>(I2C_MASTER_SDA_IO, I2C_MASTER_SCL_IO, ESP_PANEL_BOARD_TOUCH_INT_IO, TP_RST, LCD_WIDTH, LCD_HEIGHT);
+    touch911 = std::make_unique<TAMC_GT911>(I2C_MASTER_SDA_IO, I2C_MASTER_SCL_IO, ESP_PANEL_BOARD_TOUCH_INT_IO, TP_RST, LCD_WIDTH, LCD_HEIGHT);
 
     pinMode(ESP_PANEL_BOARD_TOUCH_INT_IO, 1);
 
     // Attach interrupt to GPIO 4 on the Falling edge
-    attachInterrupt(digitalPinToInterrupt(ESP_PANEL_BOARD_TOUCH_INT_IO), IIC_Touch_Interrupt, FALLING);
+    // attachInterrupt(digitalPinToInterrupt(ESP_PANEL_BOARD_TOUCH_INT_IO), IIC_Touch_Interrupt, FALLING);
 
     // Create a binary semaphore for ISR -> task signaling
-    touchSem = (void *)xSemaphoreCreateBinary();
-    if (!touchSem)
-    {
-        Serial.println("Failed to create touch semaphore");
-        return;
-    }
+    // touchSem = (void *)xSemaphoreCreateBinary();
+    // if (!touchSem)
+    // {
+    //     Serial.println("Failed to create touch semaphore");
+    //     return;
+    // }
 
-    // Create the touch handling task (runs separately from main loop)
-    BaseType_t ok = xTaskCreatePinnedToCore(touchTaskStatic, "TouchTask", 4096, this, 1, (TaskHandle_t *)&touchTaskHandle, 1);
-    if (ok != pdPASS)
-    {
-        Serial.println("Failed to create touch task");
-    }
+    // // Create the touch handling task (runs separately from main loop)
+    // // BaseType_t ok = xTaskCreatePinnedToCore(touchTaskStatic, "TouchTask", 4096, this, 1, (TaskHandle_t *)&touchTaskHandle, 1);
+    // if (ok != pdPASS)
+    // {
+    //     Serial.println("Failed to create touch task");
+    // }
 
     callback = cb;
 
-    if (touch)
+    if (touch911)
     {
-        touch->begin();
-        touch->setRotation(TOUCH_ROTATION_INVERTED);
+        touch911->begin();
+        touch911->setRotation(TOUCH_ROTATION_INVERTED);
     }
 }
 
-void Touch::IIC_Touch_Interrupt(void)
+// void Touch::IIC_Touch_Interrupt(void)
+// {
+//     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+//     if (instance && instance->touchSem)
+//     {
+//         xSemaphoreGiveFromISR((SemaphoreHandle_t)instance->touchSem, &xHigherPriorityTaskWoken);
+//         if (xHigherPriorityTaskWoken)
+//             portYIELD_FROM_ISR();
+//     }
+// }
+
+// void Touch::touchTaskStatic(void *pv)
+// {
+//     Touch *self = static_cast<Touch *>(pv);
+//     if (self)
+//         self->loop();
+//     vTaskDelete(NULL);
+// }
+
+void Touch::loop()
 {
-    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-    if (instance && instance->touchSem)
+    // SemaphoreHandle_t sem = (SemaphoreHandle_t)touchSem;
+    // for (;;)
+    // {
+    //     if (xSemaphoreTake(sem, portMAX_DELAY) == pdTRUE)
+    //     {
+    if (!touch911 || !callback)
+        return;
+
+    touch911->read();
+    if (touch911->isTouched && touch911->touches)
     {
-        xSemaphoreGiveFromISR((SemaphoreHandle_t)instance->touchSem, &xHigherPriorityTaskWoken);
-        if (xHigherPriorityTaskWoken)
-            portYIELD_FROM_ISR();
+        TouchPoint tp{touch911->points[0].x, touch911->points[0].y};
+        callback(tp);
     }
-}
-
-void Touch::touchTaskStatic(void *pv)
-{
-    Touch *self = static_cast<Touch *>(pv);
-    if (self)
-        self->touchTask();
-    vTaskDelete(NULL);
-}
-
-void Touch::touchTask()
-{
-    SemaphoreHandle_t sem = (SemaphoreHandle_t)touchSem;
-    for (;;)
-    {
-        if (xSemaphoreTake(sem, portMAX_DELAY) == pdTRUE)
-        {
-            if (!touch || !callback)
-                continue;
-
-            touch->read();
-            if (touch->isTouched && touch->touches)
-            {
-                TouchPoint tp{touch->points[0].x, touch->points[0].y};
-                callback(tp);
-            }
-        }
-    }
+    //     }
+    // }
 }

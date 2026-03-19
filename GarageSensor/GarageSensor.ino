@@ -5,6 +5,7 @@
 #include "display.h"
 #include "wifi_manager.h"
 #include "mqtt_manager.h"
+#include "switches.h"
 #include "touch.h"
 #include "pin_config.h"
 #include "ble_manager.h"
@@ -28,6 +29,9 @@ void setup()
 
     display.init();
     Serial.println("Display ready...");
+
+    switches.init();
+    Serial.println("Switches ready...");
 
     touch.init([](const TouchPoint &tp)
                {
@@ -58,6 +62,10 @@ void setup()
 void loop()
 {
     wifiManager.loop();
+    switches.loop();
+
+    touch.loop();
+
     if (loops++ > REBOOT_TIME)
     {
         // reboot to clear out and reset everything

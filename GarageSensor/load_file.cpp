@@ -47,17 +47,15 @@ size_t LoadFile::loadIndianFile(const char *path, uint16_t **out_buf)
         return 0;
     }
 
-    for (size_t i = 0; i < count; ++i)
+    // Read entire file in one bulk call for performance and to avoid long
+    // per-byte overhead which can trigger the task watchdog when running in setup().
+    size_t bytesToRead = count * 2;
+    size_t bytesRead = f.read(reinterpret_cast<uint8_t *>(data), bytesToRead);
+    if (bytesRead != bytesToRead)
     {
-        int lo = f.read();
-        int hi = f.read();
-        if (lo < 0 || hi < 0)
-        {
-            delete[] data;
-            f.close();
-            return 0;
-        }
-        data[i] = (uint16_t)((uint16_t)lo | ((uint16_t)hi << 8));
+        delete[] data;
+        f.close();
+        return 0;
     }
 
     f.close();

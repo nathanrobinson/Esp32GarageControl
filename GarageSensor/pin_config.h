@@ -15,6 +15,16 @@
 #define SD_CS 4
 #define USB_SEL 5 // USB select pin
 
+#define DI0 0                // Digital Input 0
+#define DI0_mask 1ULL << DI0 // Mask for Digital Input 0
+#define DI1 5                // Digital Input 1
+#define DI1_mask 1ULL << DI1 // Mask for Digital Input 1
+
+#define DO0 8                // Digital Output 0
+#define DO0_mask 1ULL << DO0 // Mask for Digital Output 0
+#define DO1 9                // Digital Output 1
+#define DO1_mask 1ULL << DO1 // Mask for Digital Output 1
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////// Please update the following configuration according to your LCD spec //////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -248,6 +258,9 @@
                                                     // the actual hardware connection is required
                                                     // ESP_PANEL_BOARD_USE_EXPANDER
 #define ESP_PANEL_BOARD_EXPANDER_CONTROL_ADDRESS (0x38)
+
+#define EXPANDER_I2C_EXTERNAL_ADDRESS (0x24)
+#define I2C_DIGITAL_PINS_ADDRESS (0x26)
 #endif
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

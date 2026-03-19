@@ -20,6 +20,7 @@ public:
         OPEN = 2
     };
     void publishGarageControl(TargetState state);
+    void publishGarageState(TargetState state);
 
     // Publish an RSSI value to /{area}/car/{index}/rssi (area: "garage" or "driveway")
     enum Area
@@ -55,6 +56,7 @@ private:
         char topic[32];
         char payload[16];
         uint16_t len;
+        bool retained;
     };
 
     TaskLoop outLoop;
