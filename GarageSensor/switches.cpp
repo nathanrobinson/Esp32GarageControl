@@ -7,7 +7,7 @@
 Switches switches;
 
 Switches::Switches(bool activeLow)
-    : _activeLow(activeLow), _ready(false) {}
+    : _activeLow(activeLow), _ready(false), _fluxCount(0) {}
 
 // Initialize Wire/I2C. Returns true when Wire appears initialized.
 bool Switches::init()
@@ -62,19 +62,23 @@ void Switches::loop()
 
     if (closedActive)
     {
+        _fluxCount = 0;
         garage.publishState(Garage::State::Closed);
     }
     else if (openActive)
     {
+        _fluxCount = 0;
         garage.publishState(Garage::State::Open);
     }
     else if (before == Garage::State::Closed)
     {
-        garage.publishState(Garage::State::Opening);
+        if (++_fluxCount >= 5)
+            garage.publishState(Garage::State::Opening);
     }
     else if (before == Garage::State::Open)
     {
-        garage.publishState(Garage::State::Closing);
+        if (++_fluxCount >= 5)
+            garage.publishState(Garage::State::Closing);
     }
 
     // Garage::State after = garage.getState();

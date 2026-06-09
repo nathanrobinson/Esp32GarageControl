@@ -31,6 +31,7 @@ private:
     // explicit Wire access; no expander object
     bool _activeLow;
     bool _ready;
+    int _fluxCount;
 };
 
 extern Switches switches;
