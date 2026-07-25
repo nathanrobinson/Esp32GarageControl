@@ -72,7 +72,7 @@ void Switches::loop()
     }
     else if (before == Garage::State::Closed)
     {
-        if (++_fluxCount >= 5)
+        if (++_fluxCount >= 15)
             garage.publishState(Garage::State::Opening);
     }
     else if (before == Garage::State::Open)
