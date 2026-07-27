@@ -63,23 +63,37 @@ void Switches::loop()
     if (closedActive)
     {
         _fluxCount = 0;
-        garage.publishState(Garage::State::Closed);
+
+        if (before != Garage::State::Closed)
+        {
+            garage.publishState(Garage::State::Closed);
+        }
     }
     else if (openActive)
     {
         _fluxCount = 0;
-        garage.publishState(Garage::State::Open);
+
+        if (before != Garage::State::Open)
+        {
+            garage.publishState(Garage::State::Open);
+        }
     }
-    else if (before == Garage::State::Closed)
-    {
-        if (++_fluxCount >= 15)
-            garage.publishState(Garage::State::Opening);
-    }
-    else if (before == Garage::State::Open)
-    {
-        if (++_fluxCount >= 5)
-            garage.publishState(Garage::State::Closing);
-    }
+    // else if (before == Garage::State::Closed)
+    // {
+    //     if (before != Garage::State::Opening)
+    //     {
+    //         if (++_fluxCount >= 15)
+    //             garage.publishState(Garage::State::Opening);
+    //     }
+    // }
+    // else if (before == Garage::State::Open)
+    // {
+    //     if (before != Garage::State::Opening)
+    //     {
+    //         if (++_fluxCount >= 5)
+    //             garage.publishState(Garage::State::Closing);
+    //     }
+    // }
 
     // Garage::State after = garage.getState();
     // if (after != before)
